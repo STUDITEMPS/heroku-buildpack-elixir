@@ -94,11 +94,11 @@ function backup_app() {
   rm -rf $(deps_backup_path) $(build_backup_path)
 
   echo "DEBUG: backup_app()"
-  echo "DEBUG: source: ${build_path}/_build"
+  echo "DEBUG: source: ${build_path}/_build/"
   echo "DEBUG: target: $(build_backup_path)"
 
-  cp -pR ${build_path}/deps $(deps_backup_path)
-  cp -pR ${build_path}/_build $(build_backup_path)
+  cp -pR ${build_path}/deps/ $(deps_backup_path)
+  cp -pR ${build_path}/_build/ $(build_backup_path)
 }
 
 
