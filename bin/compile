@@ -19,6 +19,15 @@ echo "DEBUG: build_path: ${build_path}"
 echo "DEBUG: cache_path: ${cache_path}"
 echo "DEBUG: env_path: ${env_path}"
 
+echo "DEBUG: build_path content ---"
+echo "$(ls -la ${build_path})"
+echo "$(ls -la ${build_path}/_build)"
+echo "---"
+echo "DEBUG: cache_path content ---"
+echo "$(ls -la ${cache_path})"
+echo "$(ls -la ${cache_path}/build_backup)"
+echo "---"
+
 source ${build_pack_path}/lib/path_funcs.sh
 source ${build_pack_path}/lib/misc_funcs.sh
 source ${build_pack_path}/lib/erlang_funcs.sh
