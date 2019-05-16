@@ -6,6 +6,10 @@ function restore_app() {
 
   if [ $erlang_changed != true ] && [ $elixir_changed != true ]; then
     if [ -d $(build_backup_path) ]; then
+      echo "DEBUG: restore_app()"
+      echo "DEBUG: source: $(build_backup_path)/"
+      echo "DEBUG: target: ${build_path}/_build"
+
       mkdir -p ${build_path}/_build
       cp -pR $(build_backup_path)/ ${build_path}/_build
     fi
@@ -88,6 +92,10 @@ function app_dependencies() {
 function backup_app() {
   # Delete the previous backups
   rm -rf $(deps_backup_path) $(build_backup_path)
+
+  echo "DEBUG: backup_app()"
+  echo "DEBUG: source: ${build_path}/_build"
+  echo "DEBUG: target: $(build_backup_path)"
 
   cp -pR ${build_path}/deps $(deps_backup_path)
   cp -pR ${build_path}/_build $(build_backup_path)

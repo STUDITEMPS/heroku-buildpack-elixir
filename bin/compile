@@ -15,6 +15,9 @@ build_path=$(cd $1 && pwd)
 cache_path=$(cd $2 && pwd)
 env_path=$(cd $3 && pwd)
 
+echo "DEBUG: build_path: ${build_path}"
+echo "DEBUG: cache_path: ${cache_path}"
+echo "DEBUG: env_path: ${env_path}"
 
 source ${build_pack_path}/lib/path_funcs.sh
 source ${build_pack_path}/lib/misc_funcs.sh
