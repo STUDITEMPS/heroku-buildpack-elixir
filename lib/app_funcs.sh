@@ -10,6 +10,12 @@ function restore_app() {
       echo "DEBUG: source: $(build_backup_path)/"
       echo "DEBUG: target: ${build_path}/_build"
 
+      echo "DEBUG: was steht im build_backup_path drin beim restore"
+      echo "$(ls -la $(build_backup_path)/)"
+
+      echo "DEBUG: und was im _build"
+      echo "$(ls -la ${build_path}/_build)"
+
       mkdir -p ${build_path}/_build
       cp -pR $(build_backup_path)/ ${build_path}/_build
     fi
