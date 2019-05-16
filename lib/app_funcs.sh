@@ -1,7 +1,7 @@
 function restore_app() {
   if [ -d $(deps_backup_path) ]; then
     mkdir -p ${build_path}/deps
-    cp -pR $(deps_backup_path)/ ${build_path}/deps
+    cp -pR $(deps_backup_path)/* ${build_path}/deps
   fi
 
   if [ $erlang_changed != true ] && [ $elixir_changed != true ]; then
@@ -17,7 +17,7 @@ function restore_app() {
       echo "$(ls -la ${build_path}/_build)"
 
       mkdir -p ${build_path}/_build
-      cp -pR $(build_backup_path)/ ${build_path}/_build
+      cp -pR $(build_backup_path)/* ${build_path}/_build
     fi
   fi
 }
@@ -41,10 +41,10 @@ function copy_hex() {
     full_hex_file_path=${HOME}/.mix/archives/hex.ez
   fi
 
-  cp -R ${HOME}/.hex/ ${build_path}/.hex/
+  cp -R ${HOME}/.hex/* ${build_path}/.hex/
 
   output_section "Copying hex from $full_hex_file_path"
-  cp -R $full_hex_file_path ${build_path}/.mix/archives
+  cp -R $full_hex_file_path/* ${build_path}/.mix/archives/*
 }
 
 function hook_pre_app_dependencies() {
@@ -103,8 +103,8 @@ function backup_app() {
   echo "DEBUG: source: ${build_path}/_build/"
   echo "DEBUG: target: $(build_backup_path)"
 
-  cp -pR ${build_path}/deps/ $(deps_backup_path)
-  cp -pR ${build_path}/_build/ $(build_backup_path)
+  cp -pR ${build_path}/deps/* $(deps_backup_path)
+  cp -pR ${build_path}/_build/* $(build_backup_path)
 }
 
 
