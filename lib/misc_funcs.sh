@@ -20,6 +20,38 @@ function output_section() {
   echo "${indentation} $1"
 }
 
+function output_warning() {
+  local spacing="      "
+  echo -e "${spacing} \e[31m$1\e[0m"
+}
+
+function output_stderr() {
+  # Outputs to stderr in case it is inside a function so it does not
+  # disturb the return value. Useful for debugging.
+  echo "$@" 1>&2;
+}
+
+
+function assert_elixir_version_set() {
+  custom_config_file=$1
+
+  # 0 when found
+  # 1 when not found
+  # 2 when file does not exist
+
+  set +e
+  # this command is allowed to return a non-zero exit code since that is how we check if the elixir version is set.
+  grep -q -e "^elixir_version=" $custom_config_file 2>/dev/null
+  set -e
+
+  if [ $? -ne 0 ]; then
+    # For now, just print a warning. In the future, we will fail and require an explicit
+    # elixir_version to be set.
+    output_line ""
+    output_warning "IMPORTANT: The default elixir_version will be removed on 2021-06-01. Please explicitly set an elixir_version in your elixir_buildpack.config before then or your deploys will fail."
+    output_line ""
+  fi
+}
 
 function load_config() {
   output_section "Checking Erlang and Elixir versions"
@@ -33,9 +65,13 @@ function load_config() {
   then
     source $custom_config_file
   else
-    output_line "WARNING: elixir_buildpack.config wasn't found in the app"
-    output_line "Using default config from Elixir buildpack"
+    output_line "Sorry, an elixir_buildpack.config is required. Please see https://github.com/HashNuke/heroku-buildpack-elixir#configuration"
+    exit 1
   fi
+
+  assert_elixir_version_set $custom_config_file
+  fix_erlang_version
+  fix_elixir_version
 
   output_line "Will use the following versions:"
   output_line "* Stack ${STACK}"
@@ -69,6 +105,26 @@ function export_mix_env() {
   output_line "* MIX_ENV=${MIX_ENV}"
 }
 
+function export_mix_home() {
+  if [ -z "$MIX_HOME" ]; then
+    if [ -d $env_path ] && [ -f $env_path/MIX_HOME ]; then
+      export MIX_HOME=$(cat $env_path/MIX_HOME)
+    else
+      export MIX_HOME=$(build_mix_home_path)
+    fi
+  fi
+}
+
+function export_hex_home() {
+  if [ -z "$HEX_HOME" ]; then
+    if [ -d $env_path ] && [ -f $env_path/HEX_HOME ]; then
+      export HEX_HOME=$(cat $env_path/HEX_HOME)
+    else
+      export HEX_HOME=$(build_hex_home_path)
+    fi
+  fi
+}
+
 function check_stack() {
   if [ "${STACK}" = "cedar" ]; then
     echo "ERROR: cedar stack is not supported, upgrade to cedar-14"
@@ -77,15 +133,69 @@ function check_stack() {
 
   if [ ! -f "${cache_path}/stack" ] || [ $(cat "${cache_path}/stack") != "${STACK}" ]; then
     output_section "Stack changed, will rebuild"
-    rm -rf ${cache_path}/*
+    $(clear_cached_files)
   fi
 
   echo "${STACK}" > "${cache_path}/stack"
 }
 
+# remove any cache files that are not under the stack-based
+# cache directory specified by the `stack_based_cache_path`
+# function
+function clean_old_cache_files() {
+  rm -rf \
+    $(build_erlang_path) \
+    ${cache_path}/deps_backup \
+    ${cache_path}/build_backup \
+    ${cache_path}/.mix \
+    ${cache_path}/.hex
+  rm -rf ${cache_path}/OTP-*.zip
+  rm -rf ${cache_path}/elixir*.zip
+}
+
+function clean_elixir_version_dependent_cache() {
+  rm -rf \
+    $(hex_backup_path) \
+    $(mix_backup_path)
+}
+
 function clean_cache() {
+  clean_old_cache_files
+
   if [ $always_rebuild = true ]; then
     output_section "Cleaning all cache to force rebuilds"
-    rm -rf $cache_path/*
+    $(clear_cached_files)
+  fi
+}
+
+function clear_cached_files() {
+  rm -rf $(stack_based_cache_path)
+}
+
+function fix_erlang_version() {
+  erlang_version=$(echo "$erlang_version" | sed 's/[^0-9.]*//g')
+}
+
+function fix_elixir_version() {
+  # TODO: this breaks if there is an carriage return behind elixir_version=(branch master)^M
+  if [ ${#elixir_version[@]} -eq 2 ] && [ ${elixir_version[0]} = "branch" ]; then
+    force_fetch=true
+    elixir_version=${elixir_version[1]}
+
+  elif [ ${#elixir_version[@]} -eq 1 ]; then
+    force_fetch=false
+
+    # If we detect a version string (e.g. 1.14 or 1.14.0) we prefix it with "v"
+    if [[ ${elixir_version} =~ ^[0-9]+\.[0-9]+ ]]; then
+      # strip out any non-digit non-dot characters
+      elixir_version=$(echo "$elixir_version" | sed 's/[^0-9.]*//g')
+      elixir_version=v${elixir_version}
+    fi
+
+  else
+    output_line "Invalid Elixir version specified"
+    output_line "See the README for allowed formats at:"
+    output_line "https://github.com/HashNuke/heroku-buildpack-elixir"
+    exit 1
   fi
 }

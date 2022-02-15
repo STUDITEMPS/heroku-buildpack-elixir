@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e -o pipefail
+
 # If this var is set to true later on,
 # then elixir and rebar will be rebuilt
 erlang_changed=false
@@ -21,12 +23,17 @@ source ${build_pack_path}/lib/misc_funcs.sh
 source ${build_pack_path}/lib/erlang_funcs.sh
 source ${build_pack_path}/lib/elixir_funcs.sh
 source ${build_pack_path}/lib/app_funcs.sh
+source ${build_pack_path}/lib/canonical_version.sh
 
-mkdir $(platform_tools_path)
+mkdir $(build_platform_tools_path)
 
-load_config
 export_env_vars
 export_mix_env
+export_mix_home
+export_hex_home
+load_config
+check_erlang_version "$erlang_version"
+check_elixir_version "$elixir_version"
 
 check_stack
 clean_cache
@@ -51,6 +58,8 @@ copy_hex
 hook_pre_compile $build_path $cache_path $env_path
 compile_app
 hook_post_compile $build_path $cache_path $env_path
+
+release_app
 
 backup_app
 backup_mix
