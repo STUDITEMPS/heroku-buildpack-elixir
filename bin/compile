@@ -44,13 +44,13 @@ install_rebar
 pre_compile_hook
 
 restore_app
-hook_pre_app_dependencies
+hook_pre_app_dependencies $build_path $cache_path $env_path
 app_dependencies
 copy_hex
 
-hook_pre_compile
+hook_pre_compile $build_path $cache_path $env_path
 compile_app
-hook_post_compile
+hook_post_compile $build_path $cache_path $env_path
 
 backup_app
 backup_mix
