@@ -32,7 +32,7 @@ function hook_pre_app_dependencies() {
 
   if [ -n "$hook_pre_fetch_dependencies" ]; then
     output_section "Executing hook before fetching app dependencies: $hook_pre_fetch_dependencies"
-    $hook_pre_fetch_dependencies || exit 1
+    $hook_pre_fetch_dependencies $1 $2 $3 || exit 1
   fi
 
   cd - > /dev/null
@@ -43,7 +43,7 @@ function hook_pre_compile() {
 
   if [ -n "$hook_pre_compile" ]; then
     output_section "Executing hook before compile: $hook_pre_compile"
-    $hook_pre_compile || exit 1
+    $hook_pre_compile $1 $2 $3 || exit 1
   fi
 
   cd - > /dev/null
@@ -54,7 +54,7 @@ function hook_post_compile() {
 
   if [ -n "$hook_post_compile" ]; then
     output_section "Executing hook after compile: $hook_post_compile"
-    $hook_post_compile || exit 1
+    $hook_post_compile $1 $2 $3 || exit 1
   fi
 
   cd - > /dev/null
