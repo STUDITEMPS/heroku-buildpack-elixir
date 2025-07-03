@@ -112,8 +112,10 @@ function release_app() {
   if [ $release = true ]; then
     output_section "Building release"
     if [ -n "$release_flags" ]; then
+      output_line "with command mix release ${release_flags[@]}"
       mix release ${release_flags[@]}
     else
+      output_line "with command mix release --overwrite"
       mix release --overwrite
     fi
   fi
