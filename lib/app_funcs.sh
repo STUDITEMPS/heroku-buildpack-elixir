@@ -111,7 +111,11 @@ function release_app() {
 
   if [ $release = true ]; then
     output_section "Building release"
-    mix release --overwrite
+    if [ -n "$release_flags" ]; then
+      mix release ${release_flags[@]}
+    else
+      mix release --overwrite
+    fi
   fi
 
   cd - > /dev/null
