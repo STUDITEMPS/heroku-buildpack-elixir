@@ -1,3 +1,18 @@
+# Gets the buildpack version
+#
+# Usage:
+#
+#     get_buildpack_version
+#
+function get_buildpack_version() {
+  local version_file="${build_pack_path}/VERSION"
+  if [ -f "$version_file" ]; then
+    cat "$version_file" | tr -d '\n'
+  else
+    echo "unknown"
+  fi
+}
+
 # Outputs log line
 #
 # Usage:
