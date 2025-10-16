@@ -111,8 +111,10 @@ function release_app() {
 
   if [ $release = true ]; then
     output_section "Building release"
-    if [ -n "$release_flags" ]; then
-      output_line "with command mix release \"${release_flags[@]}\""
+    # Check if release_flags array exists and has elements
+    # This approach is more compatible across different bash versions
+    if declare -p release_flags &>/dev/null && [ "${#release_flags[@]}" -gt 0 ]; then
+      output_line "with command mix release ${release_flags[*]}"
       mix release "${release_flags[@]}"
     else
       output_line "with command mix release --overwrite"
